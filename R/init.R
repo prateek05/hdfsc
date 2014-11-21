@@ -5,7 +5,9 @@ attr(volatiles, "name") <- "volatiles:hdfsc"
   hadoop <- getOption("hadoop.cmd")
   if (is.null(hadoop)) hadoop <- "hadoop"
   cp <- system(paste(shQuote(hadoop), "classpath"), intern=TRUE)
-  .jaddClassPath(unlist(strsplit(cp, .Platform$path.sep, fixed=TRUE)))
+  cp <- unlist(strsplit(gsub("\\*","",cp), .Platform$path.sep, fixed=TRUE))
+  cp_filelist <- unlist(lapply(cp, function(x) list.files(x, full.names=TRUE,pattern="jar$",recursive=FALSE)))
+  .jaddClassPath(c(cp,cp_filelist))
   volatiles$cfg <- .jnew("org/apache/hadoop/conf/Configuration")
   .jcall(volatiles$cfg, "V", "setClassLoader", .jcast(.jclassLoader(), "java/lang/ClassLoader"))
   volatiles$fs <- .jcall("org/apache/hadoop/fs/FileSystem", "Lorg/apache/hadoop/fs/FileSystem;", "get", volatiles$cfg)
